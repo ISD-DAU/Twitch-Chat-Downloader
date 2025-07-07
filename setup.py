@@ -41,7 +41,6 @@ setup(
     packages=find_packages(),
     python_requires=">=3.8",
     setup_requires=setup_requirements,
-    test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/PetterKraabol/Twitch-Chat-Downloader',
     version='3.2.2',
