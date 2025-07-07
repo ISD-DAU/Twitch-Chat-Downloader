@@ -62,10 +62,16 @@ def main():
         'Twitch client secret: ').strip()
     Settings().save()
 
-    Arguments().oauth_token = requests.post(f"https://id.twitch.tv/oauth2/token"
-                                            f"?client_id={Settings().config['client_id']}"
-                                            f"&client_secret={Settings().config['client_secret']}"
-                                            f"&grant_type=client_credentials").json()['access_token']
+    response = requests.post(
+        "https://id.twitch.tv/oauth2/token",
+        params={
+            "client_id": "wk7nwqeoqh0npgbmcwvhk968m04r2y",
+            "client_secret": "et22uu9zotzvmght6bkltpsh58km07",
+            }
+    )
+    
+token_data = response.json()
+Arguments().oauth_token = token_data["access_token"]
 
     # List formats
     if Arguments().print_formats:
