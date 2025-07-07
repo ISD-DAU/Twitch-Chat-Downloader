@@ -2,13 +2,12 @@ import argparse
 import os
 from pathlib import Path
 from typing import List, Callable
-
-import requests
-
 from .arguments import Arguments
 from .downloader import Downloader
 from .logger import Logger, Log
 from .settings import Settings
+import os
+import requests
 
 __name__: str = 'tcd'
 __version__: str = '3.2.2'
@@ -54,24 +53,30 @@ def main():
     if Arguments().settings:
         Logger().log(str(Settings().filepath))
         return
-
-    # Client ID
-    Settings().config['client_id'] = Arguments().client_id or Settings().config.get('client_id', None) or input(
-        'Twitch client ID: ').strip()
-    Settings().config['client_secret'] = Arguments().client_secret or Settings().config.get('client_secret', None) or input(
-        'Twitch client secret: ').strip()
-    Settings().save()
-
-    response = requests.post(
-        "https://id.twitch.tv/oauth2/token",
-        params={
-            "client_id": "wk7nwqeoqh0npgbmcwvhk968m04r2y",
-            "client_secret": "et22uu9zotzvmght6bkltpsh58km07",
-            }
-    )
+        
+    # Read credentials from env vars
+    client_id = os.environ.get("TCD_CLIENT_ID")
+    client_secret = os.environ.get("TCD_CLIENT_SECRET")
     
-token_data = response.json()
-Arguments().oauth_token = token_data["access_token"]
+    if client_id and client_secret:
+        response = requests.post(
+            "https://id.twitch.tv/oauth2/token",
+            params={
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "grant_type": "client_credentials"
+            }
+        )
+        token_data = response.json()
+            if "access_token" in token_data:
+                Arguments().oauth_token = token_data["access_token"]
+            else:
+                print("ERROR: Could not fetch access token. Response:", token_data)
+                exit(1)
+    else:
+        # fallback to old behavior (optional)
+        print("ERROR: Please set TCD_CLIENT_ID and TCD_CLIENT_SECRET environment variables.")
+        exit(1)
 
     # List formats
     if Arguments().print_formats:
